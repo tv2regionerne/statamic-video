@@ -1,0 +1,38 @@
+{
+    "name": "cboxdk/statamic-subtitles",
+    "autoload": {
+        "psr-4": {
+            "Cboxdk\\StatamicSubtitles\\": "src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Cboxdk\\StatamicSubtitles\\Tests\\": "tests"
+        }
+    },
+    "require": {
+        "statamic/cms": "^5.0",
+        "captioning/captioning": "^3.0"
+    },
+    "require-dev": {
+        "orchestra/testbench": "^9.0"
+    },
+    "config": {
+        "allow-plugins": {
+            "pixelfear/composer-dist-plugin": true
+        }
+    },
+    "extra": {
+        "statamic": {
+            "name": "Statamic Subtitles",
+            "description": "Statamic Subtitles addon"
+        },
+        "laravel": {
+            "providers": [
+                "Cboxdk\\StatamicSubtitles\\ServiceProvider"
+            ]
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}
