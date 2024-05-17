@@ -1,13 +1,13 @@
 {
-    "name": "cboxdk/statamic-subtitles",
+    "name": "tv2regionerne/statamic-video",
     "autoload": {
         "psr-4": {
-            "Cboxdk\\StatamicSubtitles\\": "src"
+            "Tv2regionerne\\StatamicVideo\\": "src"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "Cboxdk\\StatamicSubtitles\\Tests\\": "tests"
+            "Tv2regionerne\\StatamicVideo\\Tests\\": "tests"
         }
     },
     "require": {
@@ -24,12 +24,12 @@
     },
     "extra": {
         "statamic": {
-            "name": "Statamic Subtitles",
-            "description": "Statamic Subtitles addon"
+            "name": "Statamic Video",
+            "description": "Statamic Video addon"
         },
         "laravel": {
             "providers": [
-                "Cboxdk\\StatamicSubtitles\\ServiceProvider"
+                "Tv2regionerne\\StatamicVideo\\ServiceProvider"
             ]
         }
     },

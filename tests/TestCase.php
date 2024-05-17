@@ -1,9 +1,9 @@
 <?php
 
-namespace Cboxdk\StatamicSubtitles\Tests;
+namespace Tv2regionerne\StatamicVideo\Tests;
 
-use Cboxdk\StatamicSubtitles\ServiceProvider;
 use Statamic\Testing\AddonTestCase;
+use Tv2regionerne\StatamicVideo\ServiceProvider;
 
 abstract class TestCase extends AddonTestCase
 {

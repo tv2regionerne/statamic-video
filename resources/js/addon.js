@@ -1,5 +1,7 @@
-import Subtitles from './components/fieldtypes/Subtitles.vue'
+import VideoVtt from './components/fieldtypes/VideoVtt.vue'
+import VideoTrim from './components/fieldtypes/VideoTrim.vue'
 
 Statamic.booting(() => {
-    Statamic.component('subtitles-fieldtype', Subtitles)
+    Statamic.component('video_vtt-fieldtype', VideoVtt)
+    Statamic.component('video_trim-fieldtype', VideoTrim)
 })
