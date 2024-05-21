@@ -1,6 +1,6 @@
 <?php
 
-namespace Cboxdk\StatamicSubtitles\Tests;
+namespace Tv2regionerne\StatamicVideo\Tests;
 
 class ExampleTest extends TestCase
 {

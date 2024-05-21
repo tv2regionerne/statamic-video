@@ -3,3 +3,4 @@ vendor
 mix-manifest.json
 /composer.lock
 /.idea
+hot
