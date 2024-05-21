@@ -8,8 +8,6 @@ use Statamic\Fields\Fieldtype;
 
 class VideoText extends Fieldtype
 {
-    protected static $title = 'Video Text';
-
     protected $defaultValue = [
         'chapters' => [
             [

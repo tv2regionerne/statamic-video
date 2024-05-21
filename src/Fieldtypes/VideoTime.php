@@ -6,8 +6,6 @@ use Statamic\Fields\Fieldtype;
 
 class VideoTime extends Fieldtype
 {
-    protected static $title = 'Video Time';
-
     protected function configFieldItems(): array
     {
         return [
@@ -29,15 +27,22 @@ class VideoTime extends Fieldtype
                     'range' => __('Range'),
                 ],
             ],
+            'null_limits' => [
+                'display' => __('Null Limits'),
+                'type' => 'toggle',
+            ],
         ];
+    }
+
+    public function defaultValue()
+    {
+        return $this->config('mode') === 'range'
+            ? ['start' => null, 'end' => null]
+            : null;
     }
 
     public function preProcess($value)
     {
-        if (! isset($value)) {
-            return $value;
-        }
-
         return $this->config('mode') === 'range'
             ? $value
             : ['start' => $value, 'end' => null];
@@ -45,10 +50,6 @@ class VideoTime extends Fieldtype
 
     public function process($value)
     {
-        if (! isset($value)) {
-            return $value;
-        }
-
         return $this->config('mode') === 'range'
             ? $value
             : $value['start'];
