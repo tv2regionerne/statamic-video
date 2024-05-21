@@ -7,7 +7,7 @@
             ref="video"
             controls
             @loadeddata="loadedVideo" />
-        <div v-if="!loading" class="video-vtt-controls flex">
+        <div v-if="!loading" class="video-Text-controls flex">
             <input
                 type="range"
                 class="w-full"
@@ -22,7 +22,7 @@
                 Add
             </button>
         </div>
-        <div v-if="!loading" class="video-vtt-chapters">
+        <div v-if="!loading" class="video-Text-chapters">
             <div
                 v-for="chapter, index in chapters"
                 class="flex mt-2 cursor-pointer rounded flex items-center p-1"
@@ -37,6 +37,7 @@
                     class="w-32 px-2">
                     {{ chapter.start }}
                 </div>
+                <!-- Use input-text with prefix, or copy date time style -->
                 <input
                     type="text"
                     class="grow px-2 py-1 rounded bg-gray-100 text-gray-800"

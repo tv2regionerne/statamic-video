@@ -2,13 +2,13 @@
 
 namespace Tv2regionerne\StatamicVideo\Fieldtypes;
 
-use Captioning\Format\WebvttCue;
-use Captioning\Format\WebvttFile;
+use Captioning\Format\WebTextCue;
+use Captioning\Format\WebTextFile;
 use Statamic\Fields\Fieldtype;
 
-class VideoVtt extends Fieldtype
+class VideoText extends Fieldtype
 {
-    protected static $title = 'Video VTT';
+    protected static $title = 'Video Text';
 
     protected $defaultValue = [
         'chapters' => [
@@ -26,7 +26,7 @@ class VideoVtt extends Fieldtype
             'source' => [
                 'type' => 'text',
                 'display' => __('Video Source Field'),
-                'instructions' => __('What video field handle the trimmer should use.'),
+                'instructions' => __('What video field handle the Timemer should use.'),
                 'default' => 'video',
                 'width' => 50,
                 'validate' => [
@@ -67,8 +67,8 @@ class VideoVtt extends Fieldtype
     //  */
     // public function process($data)
     // {
-    //     $vtt = new WebvttFile();
-    //     $vtt->loadFromString($data);
+    //     $Text = new WebTextFile();
+    //     $Text->loadFromString($data);
 
     //     return $data;
     // }
@@ -79,13 +79,13 @@ class VideoVtt extends Fieldtype
     //         'error' => false,
     //     ];
     //     try {
-    //         $vtt = new WebvttFile();
-    //         $vtt->loadFromString($value);
+    //         $Text = new WebTextFile();
+    //         $Text->loadFromString($value);
 
     //         $cues = [];
 
-    //         /** @var WebvttCue $cue */
-    //         foreach ($vtt->getCues() as $cue) {
+    //         /** @var WebTextCue $cue */
+    //         foreach ($Text->getCues() as $cue) {
     //             $cues[] = [
     //                 'start' => $cue->getStart(),
     //                 'stop' => $cue->getStart(),

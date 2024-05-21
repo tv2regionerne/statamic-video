@@ -7,8 +7,8 @@ use Statamic\Providers\AddonServiceProvider;
 class ServiceProvider extends AddonServiceProvider
 {
     protected $fieldtypes = [
-        Fieldtypes\VideoVtt::class,
-        Fieldtypes\VideoTrim::class,
+        Fieldtypes\VideoText::class,
+        Fieldtypes\VideoTime::class,
     ];
 
     protected $vite = [

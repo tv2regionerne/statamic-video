@@ -1,7 +1,7 @@
-import VideoVtt from './components/fieldtypes/VideoVtt.vue'
-import VideoTrim from './components/fieldtypes/VideoTrim.vue'
+import VideoText from './components/fieldtypes/VideoText.vue'
+import VideoTime from './components/fieldtypes/VideoTime.vue'
 
 Statamic.booting(() => {
-    Statamic.component('video_vtt-fieldtype', VideoVtt)
-    Statamic.component('video_trim-fieldtype', VideoTrim)
+    Statamic.component('video_text-fieldtype', VideoText)
+    Statamic.component('video_time-fieldtype', VideoTime)
 })
