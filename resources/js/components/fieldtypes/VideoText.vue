@@ -3,48 +3,43 @@
     <div>
         <video
             :src="sourceUrl"
-            class="w-full rounded mb-2"
+            class="w-full rounded-t"
             ref="video"
             controls
             @loadeddata="loadedVideo" />
-        <div v-if="!loading" class="video-Text-controls flex">
-            <input
-                type="range"
-                class="w-full"
-                min="0"
-                max="1"
-                step="any"
-                :value="pos"
-                @input="updatePos($event.target.value)" />
-            <button
-                class="btn-xs btn ml-2"
-                @click="addChapter">
-                Add
-            </button>
-        </div>
-        <div v-if="!loading" class="video-Text-chapters">
-            <div
-                v-for="chapter, index in chapters"
-                class="flex mt-2 cursor-pointer rounded flex items-center p-1"
-                :class="{
-                    'bg-gray-400': index !== selected,
-                    'bg-blue text-white': index === selected,
-                }"
-                @click="selectChapter(index)">
-                <div
-                    type="text"
-                    isReadOnly
-                    class="w-32 px-2">
-                    {{ chapter.start }}
-                </div>
-                <!-- Use input-text with prefix, or copy date time style -->
+        <div v-if="!loading" class="flex bg-gray-900 p-2 gap-2 rounded-b -mt-px text-white items-center">
+            <div class="video_addon-track video_text-track">
                 <input
-                    type="text"
-                    class="grow px-2 py-1 rounded bg-gray-100 text-gray-800"
-                    placeholder="Title"
-                    :value="chapter.title"
-                    @input="updateChapter(index, { title: $event.target.value })" />
+                    type="range"
+                    class="w-full"
+                    :min="0"
+                    :max="duration"
+                    :value="items[selected].start"
+                    @input="updateItemStart(selected, $event.target.value)" />
+                <div v-for="item, index in items" :style="{
+                    '--start': item.start / duration,
+                    '--end': (items[index + 1]?.start || duration) / duration,
+                }" v-tooltip="item.text || 'Unnamed'" @click="selectItem(index)"></div>
             </div>
+        </div>
+        <div v-if="!loading">
+            <div
+                v-for="item, index in items"
+                class="mt-2 cursor-pointer relative video_text-item"
+                :class="{ 'video_text-selected': index === selected }"
+                @click="selectItem(index)">
+                <text-input
+                    :prepend="timecode(item.start)"
+                    class="w-full"
+                    placeholder="Text"
+                    :value="item.text"
+                    @focus="selectItem(index)"
+                    @input="updateItem(index, { text: $event })" />
+                <button v-if="index !== 0" @click="deleteItem(index)" type="button" class="text-gray-600 cursor-pointer px-2 hover:text-blue-500">
+                    <span>×</span>
+                </button>
+            </div>
+            <button class="btn mt-2" @click="addItem">Add Chapter</button>
         </div>
     </div>
 
@@ -60,9 +55,8 @@ export default {
     data() {
         return {
             loading: true,
-            pos: 0,
             selected: 0,
-            chapters: this.value.chapters ?? [],
+            items: {},
         };
     },
 
@@ -77,11 +71,11 @@ export default {
         },
 
         duration() {
-            return this.$refs.video.duration;
+            return Math.round(this.$refs.video.duration);
         },
 
-        time() {
-            return Math.round(this.duration * this.pos);
+        positions() {
+            return this.items.map(item => item.start / this.duration);
         },
 
     },
@@ -90,59 +84,73 @@ export default {
 
         loadedVideo() {
             this.loading = false;
-        },
-        
-        seekVideo(pos) {
-            this.$refs.video.pause();
-            this.$refs.video.currentTime = this.duration * pos;
+            this.items = this.value;
         },
 
-        updatePos(pos) {
-            this.pos = pos;
-            this.seekVideo(this.pos);
-            this.updateChapter(this.selected, { start: this.time });
-        },
-
-        updateTime(time) {
-            this.updatePos(time / this.duration);
-        },
-
-        addChapter() {
-            this.chapters = [
-                ...this.chapters,
+        addItem() {
+            this.items = [
+                ...this.items,
                 { 
-                    start: this.time,
-                    title: null,
+                    start: Math.min(this.items[this.items.length - 1].start + 1, this.duration),
+                    text: null,
                 }
             ];
-            this.selectChapter(this.chapters.length - 1);
+            this.updateValue();
+            this.selectItem(this.items.length - 1);
+        },
+        
+        seekVideo(value) {
+            this.$refs.video.pause();
+            this.$refs.video.currentTime = value;
         },
 
-        selectChapter(index) {
-            this.selected = index;
-            this.updateTime(this.chapters[index].start);
+        updateItemStart(index, value) {
+            const min = index !== 0 ? (this.items[index - 1]?.start || 0) : 0;
+            const max = index !== 0 ? (this.items[index + 1]?.start || this.duration) : 0;
+            const time = Math.min(max, Math.max(min, parseInt(value)));
+            this.updateItem(index, { start: time });
+            this.seekVideo(time);
         },
 
-        updateChapter(index, value) {
-            this.chapters = [
-                ...this.chapters.slice(0, index),
-                { ...this.chapters[index], ...value },
-                ...this.chapters.slice(index + 1),
+        updateItem(index, value) {
+            this.items = [
+                ...this.items.slice(0, index),
+                { ...this.items[index], ...value },
+                ...this.items.slice(index + 1),
             ];
+            this.updateValue();
         },
 
         updateValue() {
-            this.update({
-                chapters: this.chapters,
-            });
+            this.update(this.items);
+        },
+
+        deleteItem(index) {
+            this.items = [
+                ...this.items.slice(0, index),
+                ...this.items.slice(index + 1),
+            ]
+            this.updateValue();
+            this.selectItem(0)
+        },
+
+        selectItem(index) {
+            this.selected = index;
+        },
+
+        timecode(value) {
+            const minutes = Math.floor(value / 60);
+            const seconds = value % 60;
+            return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
         },
 
     },
 
     watch: {
-        
-        chapters() {
-            this.updateValue();
+
+        selected() {
+            const position = this.positions[this.selected];
+            this.seekVideo(position);
         },
 
     },
