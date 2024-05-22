@@ -2,22 +2,12 @@
 
 namespace Tv2regionerne\StatamicVideo\Fieldtypes;
 
-use Captioning\Format\WebTextCue;
-use Captioning\Format\WebTextFile;
+use Captioning\Format\WebvttCue;
+use Captioning\Format\WebVttFile;
 use Statamic\Fields\Fieldtype;
 
 class VideoText extends Fieldtype
 {
-    protected $defaultValue = [
-        'chapters' => [
-            [
-                'start' => 0,
-                'end' => 0,
-                'title' => null,
-            ],
-        ],
-    ];
-
     protected function configFieldItems(): array
     {
         return [
@@ -34,69 +24,47 @@ class VideoText extends Fieldtype
         ];
     }
 
-    // /**
-    //  * The blank/default value.
-    //  *
-    //  * @return array
-    //  */
-    // public function defaultValue()
-    // {
-    //     return null;
-    // }
+    public function defaultValue()
+    {
+        return [
+            [
+                'start' => 0,
+                'text' => null,
+            ],
+        ];
+    }
 
-    // /**
-    //  * Pre-process the data before it gets sent to the publish page.
-    //  *
-    //  * @param  mixed  $data
-    //  * @return array|mixed
-    //  */
-    // public function preProcess($data)
-    // {
-    //     return [
-    //         'chapters' =>
-    //     ];
-    // }
+    public function preProcess($data)
+    {
+        $vtt = new WebVttFile();
+        $vtt->loadFromString(trim($data));
 
-    // /**
-    //  * Process the data before it gets saved.
-    //  *
-    //  * @param  mixed  $data
-    //  * @return array|mixed
-    //  */
-    // public function process($data)
-    // {
-    //     $Text = new WebTextFile();
-    //     $Text->loadFromString($data);
+        return collect($vtt->getCues())
+             ->map(function (WebvttCue $cue) {
+                 return [
+                     'start' => (int) ($cue->getStartMS() / 1000),
+                     'text' => $cue->getText(),
+                 ];
+             })
+             ->all();
+    }
 
-    //     return $data;
-    // }
+    public function process($data)
+    {
+        $vtt = new WebvttFile();
 
-    // public function augment($value): array
-    // {
-    //     $output = [
-    //         'error' => false,
-    //     ];
-    //     try {
-    //         $Text = new WebTextFile();
-    //         $Text->loadFromString($value);
+        collect($data)
+            ->each(function ($item, $i) use ($vtt, $data) {
+                $start = $item['start'];
+                $end = $data[$i + 1]['start'] ?? 3600; // @todo we need the video duration, or we need to pass it in
+                $vtt->addCue((new WebvttCue('00:00:00:00', '00:00:00:00'))
+                    ->setStartMS($start * 1000)
+                    ->setStopMS($end * 1000)
+                    ->setText($item['text'] ?? 'Unnamed'));
+            });
 
-    //         $cues = [];
+        $vtt->build();
 
-    //         /** @var WebTextCue $cue */
-    //         foreach ($Text->getCues() as $cue) {
-    //             $cues[] = [
-    //                 'start' => $cue->getStart(),
-    //                 'stop' => $cue->getStart(),
-    //                 'text' => $cue->getText(),
-    //                 //'textLines' => $cue->getTextLines(),
-    //             ];
-    //         }
-    //         $output['cues'] = $cues;
-    //     } catch (\Exception $exception) {
-    //         $output['error'] = true;
-    //         $output['error_msg'] = $exception->getMessage();
-    //     }
-
-    //     return $output;
-    // }
+        return $vtt->getFileContent();
+    }
 }

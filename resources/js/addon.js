@@ -1,3 +1,5 @@
+import '../css/addon.css'
+
 import VideoText from './components/fieldtypes/VideoText.vue'
 import VideoTime from './components/fieldtypes/VideoTime.vue'
 
