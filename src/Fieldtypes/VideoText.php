@@ -24,32 +24,28 @@ class VideoText extends Fieldtype
         ];
     }
 
-    public function defaultValue()
-    {
-        return [
-            [
-                'start' => 0,
-                'text' => null,
-            ],
-        ];
-    }
-
     public function preProcess($data)
     {
-        if (is_array($data)) {
-            return "";
+        if (! isset($data)) {
+            return [
+                [
+                    'start' => 0,
+                    'text' => null,
+                ],
+            ];
         }
+
         $vtt = new WebVttFile();
         $vtt->loadFromString(trim($data));
 
         return collect($vtt->getCues())
-             ->map(function (WebvttCue $cue) {
-                 return [
-                     'start' => (int) ($cue->getStartMS() / 1000),
-                     'text' => $cue->getText(),
-                 ];
-             })
-             ->all();
+            ->map(function (WebvttCue $cue) {
+                return [
+                    'start' => (int) ($cue->getStartMS() / 1000),
+                    'text' => $cue->getText(),
+                ];
+            })
+            ->all();
     }
 
     public function process($data)
