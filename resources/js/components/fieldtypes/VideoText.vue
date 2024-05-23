@@ -16,10 +16,12 @@
                     :max="duration"
                     :value="items[selected].start"
                     @input="updateItemStart(selected, $event.target.value)" />
-                <div v-for="item, index in items" :style="{
-                    '--start': item.start / duration,
-                    '--end': (items[index + 1]?.start || duration) / duration,
-                }" v-tooltip="item.text || 'Unnamed'" @click="selectItem(index)"></div>
+                <div class="video_text-chapters">
+                    <div v-for="item, index in items" :style="{
+                        '--start': item.start / duration,
+                        '--end': (items[index + 1]?.start || duration) / duration,
+                    }" v-tooltip="item.text || 'Unnamed'" @click="selectItem(index)"></div>
+                </div>
             </div>
         </div>
         <div v-if="!loading">
