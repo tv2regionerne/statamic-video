@@ -19,7 +19,7 @@
                 <div class="video_text-chapters">
                     <div v-for="item, index in items" :style="{
                         '--start': item.start / duration,
-                        '--end': (items[index + 1]?.start || duration) / duration,
+                        '--end': item.end / duration,
                     }" v-tooltip="item.text || 'Unnamed'" @click="selectItem(index)"></div>
                 </div>
             </div>
@@ -88,7 +88,7 @@ export default {
         loadedVideo() {
             this.loading = false;
             this.items = this.value;
-            this.updateItem(this.items.length - 1, { end: this.duration });
+            this.syncEndTimes();
         },
 
         addItem() {
@@ -96,10 +96,11 @@ export default {
                 ...this.items,
                 { 
                     start: Math.min(this.items[this.items.length - 1].start + 1, this.duration),
+                    end: null,
                     text: null,
                 }
             ];
-            this.updateValue();
+            this.syncEndTimes();
             this.selectItem(this.items.length - 1);
         },
         
@@ -113,9 +114,6 @@ export default {
             const max = index !== 0 ? (this.items[index + 1]?.start || this.duration) : 0;
             const time = Math.min(max, Math.max(min, parseInt(value)));
             this.updateItem(index, { start: time });
-            if (index > 0) {
-                this.updateItem(index - 1, { end: time });
-            }
             this.seekVideo(time);
         },
 
@@ -125,11 +123,7 @@ export default {
                 { ...this.items[index], ...value },
                 ...this.items.slice(index + 1),
             ];
-            this.updateValue();
-        },
-
-        updateValue() {
-            this.update(this.items);
+            this.syncEndTimes();
         },
 
         deleteItem(index) {
@@ -137,12 +131,20 @@ export default {
                 ...this.items.slice(0, index),
                 ...this.items.slice(index + 1),
             ]
-            this.updateValue();
+            this.syncEndTimes();
             this.selectItem(0)
         },
 
         selectItem(index) {
             this.selected = index;
+        },
+
+        syncEndTimes() {
+            this.items = this.items.map((item, index) => {
+                return index === this.items.length - 1 
+                    ? { ...item, end: this.duration }
+                    : { ...item, end: this.items[index + 1].start }
+            });
         },
 
         timecode(value) {
@@ -158,6 +160,10 @@ export default {
         selected() {
             const position = this.positions[this.selected];
             this.seekVideo(position);
+        },
+
+        items(value) {
+            this.updateDebounced(value);
         },
 
     },
