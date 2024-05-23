@@ -32,6 +32,7 @@
                 @click="selectItem(index)">
                 <text-input
                     :prepend="timecode(item.start)"
+                    :append="timecode(item.end)"
                     class="w-full"
                     placeholder="Text"
                     :value="item.text"
@@ -87,6 +88,7 @@ export default {
         loadedVideo() {
             this.loading = false;
             this.items = this.value;
+            this.updateItem(this.items.length - 1, { end: this.duration });
         },
 
         addItem() {
@@ -111,6 +113,9 @@ export default {
             const max = index !== 0 ? (this.items[index + 1]?.start || this.duration) : 0;
             const time = Math.min(max, Math.max(min, parseInt(value)));
             this.updateItem(index, { start: time });
+            if (index > 0) {
+                this.updateItem(index - 1, { end: time });
+            }
             this.seekVideo(time);
         },
 

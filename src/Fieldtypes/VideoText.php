@@ -30,6 +30,7 @@ class VideoText extends Fieldtype
             return [
                 [
                     'start' => 0,
+                    'end' => 0,
                     'text' => null,
                 ],
             ];
@@ -42,6 +43,7 @@ class VideoText extends Fieldtype
             ->map(function (WebvttCue $cue) {
                 return [
                     'start' => (int) ($cue->getStartMS() / 1000),
+                    'end' => (int) ($cue->getStopMS() / 1000),
                     'text' => $cue->getText(),
                 ];
             })
@@ -53,12 +55,10 @@ class VideoText extends Fieldtype
         $vtt = new WebvttFile();
 
         collect($data)
-            ->each(function ($item, $i) use ($vtt, $data) {
-                $start = $item['start'];
-                $end = $data[$i + 1]['start'] ?? 3600; // @todo we need the video duration, or we need to pass it in
+            ->each(function ($item, $i) use ($vtt) {
                 $vtt->addCue((new WebvttCue('00:00:00:00', '00:00:00:00'))
-                    ->setStartMS($start * 1000)
-                    ->setStopMS($end * 1000)
+                    ->setStartMS($item['start'] * 1000)
+                    ->setStopMS($item['end'] * 1000)
                     ->setText($item['text'] ?? 'Unnamed'));
             });
 
