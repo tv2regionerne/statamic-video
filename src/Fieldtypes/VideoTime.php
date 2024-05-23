@@ -43,15 +43,20 @@ class VideoTime extends Fieldtype
 
     public function preProcess($value)
     {
-        return $this->config('mode') === 'range'
-            ? $value
-            : ['start' => $value, 'end' => null];
+        return $this->config('mode') === 'range' ? [
+            'start' => (isset($value['start']) ? $value['start'] * 1000 : null),
+            'end' => (isset($value['end']) ? $value['end'] * 1000 : null),
+        ] : [
+            'start' => (isset($value) ? $value * 1000 : null),
+            'end' => null,
+        ];
     }
 
     public function process($value)
     {
-        return $this->config('mode') === 'range'
-            ? $value
-            : $value['start'];
+        return $this->config('mode') === 'range' ? [
+            'start' => round($value['start'] / 1000, 3),
+            'end' => round($value['end'] / 1000, 3),
+        ] : round($value['start'] / 1000, 3);
     }
 }

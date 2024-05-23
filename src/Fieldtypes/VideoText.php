@@ -42,8 +42,8 @@ class VideoText extends Fieldtype
         return collect($vtt->getCues())
             ->map(function (WebvttCue $cue) {
                 return [
-                    'start' => (int) ($cue->getStartMS() / 1000),
-                    'end' => (int) ($cue->getStopMS() / 1000),
+                    'start' => (int) ($cue->getStartMS()),
+                    'end' => (int) ($cue->getStopMS()),
                     'text' => $cue->getText(),
                 ];
             })
@@ -57,8 +57,8 @@ class VideoText extends Fieldtype
         collect($data)
             ->each(function ($item, $i) use ($vtt) {
                 $vtt->addCue((new WebvttCue('00:00:00:00', '00:00:00:00'))
-                    ->setStartMS($item['start'] * 1000)
-                    ->setStopMS($item['end'] * 1000)
+                    ->setStartMS($item['start'])
+                    ->setStopMS($item['end'])
                     ->setText($item['text'] ?? 'Unnamed'));
             });
 
