@@ -36,6 +36,9 @@ class VideoText extends Fieldtype
 
     public function preProcess($data)
     {
+        if (is_array($data)) {
+            return "";
+        }
         $vtt = new WebVttFile();
         $vtt->loadFromString(trim($data));
 
