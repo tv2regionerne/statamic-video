@@ -3,7 +3,7 @@
 namespace Tv2regionerne\StatamicVideo\Fieldtypes;
 
 use Captioning\Format\WebvttCue;
-use Captioning\Format\WebVttFile;
+use Captioning\Format\WebvttFile;
 use Statamic\Fields\Fieldtype;
 
 class VideoText extends Fieldtype
