@@ -67,7 +67,7 @@ export default {
         },
 
         duration() {
-            return Math.round(this.$refs.video.duration);
+            return Math.round(this.$refs.video.duration * 1000);
         },
         
         isSingle() {
@@ -91,7 +91,7 @@ export default {
         
         seekVideo(value) {
             this.$refs.video.pause();
-            this.$refs.video.currentTime = value;
+            this.$refs.video.currentTime = value / 1000;
         },
 
         updateTime(key, value) {
@@ -120,9 +120,10 @@ export default {
         },
 
         timecode(value) {
-            const minutes = Math.floor(value / 60);
-            const seconds = value % 60;
-            return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            const seconds = Math.round(value / 1000);
+            const m = Math.floor(seconds / 60);
+            const s = seconds % 60;
+            return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
         },
 
     },
