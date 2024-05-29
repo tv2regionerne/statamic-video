@@ -70,4 +70,39 @@ class VideoText extends Fieldtype
 
         return $vtt->getFileContent();
     }
+
+    public function augment($value): array
+    {
+        $output = [
+            'raw' => $value,
+            'error' => false
+        ];
+
+        try {
+            $vtt = new WebvttFile();
+            $vtt->loadFromString($value);
+
+            $cues = [];
+
+            /** @var WebvttCue $cue */
+            foreach ($vtt->getCues() as $cue) {
+
+                $cues[] = [
+                    'start' => $cue->getStart(),
+                    'stop' => $cue->getStart(),
+                    'text' => $cue->getText(),
+                    //'textLines' => $cue->getTextLines(),
+                ];
+            }
+            $output['cues'] = $cues;
+
+
+        } catch (\Exception $exception) {
+            $output['error'] = true;
+            $output['error_msg'] = $exception->getMessage();
+        }
+
+
+        return $output;
+    }
 }
