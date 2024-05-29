@@ -85,7 +85,7 @@ class VideoText extends Fieldtype
 
                 $cues[] = [
                     'start' => $cue->getStart(),
-                    'stop' => $cue->getStart(),
+                    'stop' => $cue->getStop(),
                     'text' => $cue->getText(),
                     //'textLines' => $cue->getTextLines(),
                 ];
