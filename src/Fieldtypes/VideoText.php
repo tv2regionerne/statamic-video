@@ -76,7 +76,7 @@ class VideoText extends Fieldtype
 
         try {
             $vtt = new WebvttFile();
-            $vtt->loadFromString($value);
+            $vtt->loadFromString(trim($value));
 
             $cues = [];
 
