@@ -52,6 +52,10 @@ class VideoText extends Fieldtype
 
     public function process($data)
     {
+        if (! is_array($data)) {
+            return null;
+        }
+        
         $vtt = new WebvttFile();
 
         collect($data)
