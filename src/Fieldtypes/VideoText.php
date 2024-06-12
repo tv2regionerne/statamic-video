@@ -55,7 +55,7 @@ class VideoText extends Fieldtype
         if (! is_array($data)) {
             return null;
         }
-
+        
         $vtt = new WebvttFile();
 
         collect($data)
@@ -75,7 +75,7 @@ class VideoText extends Fieldtype
     {
         $output = [
             'raw' => $value,
-            'error' => false,
+            'error' => false
         ];
 
         try {
@@ -86,6 +86,7 @@ class VideoText extends Fieldtype
 
             /** @var WebvttCue $cue */
             foreach ($vtt->getCues() as $cue) {
+
                 $cues[] = [
                     'start' => $cue->getStart(),
                     'stop' => $cue->getStop(),
@@ -94,10 +95,13 @@ class VideoText extends Fieldtype
                 ];
             }
             $output['cues'] = $cues;
+
+
         } catch (\Exception $exception) {
             $output['error'] = true;
             $output['error_msg'] = $exception->getMessage();
         }
+
 
         return $output;
     }
