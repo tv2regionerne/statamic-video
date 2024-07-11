@@ -3,7 +3,7 @@
     <div class="">
         <video
             :src="sourceUrl"
-            class="w-full rounded-t"
+            class="video_addon-preview w-full rounded-t bg-black"
             ref="video"
             controls
             @loadeddata="loadedVideo" />
