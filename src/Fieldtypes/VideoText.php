@@ -27,35 +27,44 @@ class VideoText extends Fieldtype
     public function preProcess($data)
     {
         if (! isset($data)) {
-            return [
-                [
-                    'start' => 0,
-                    'end' => 0,
-                    'text' => null,
-                ],
-            ];
+            $data = [[
+                'start' => 0,
+                'end' => 0,
+                'text' => null,
+            ]];
         }
 
-        $vtt = new WebVttFile();
-        $vtt->loadFromString(trim($data));
+        if (is_string($data)) {
+            $data = $this->vttToData($data);
+        }
 
-        return collect($vtt->getCues())
-            ->map(function (WebvttCue $cue) {
-                return [
-                    'start' => (int) ($cue->getStartMS()),
-                    'end' => (int) ($cue->getStopMS()),
-                    'text' => $cue->getText(),
-                ];
-            })
-            ->all();
+        return $data;
     }
 
     public function process($data)
     {
-        if (! is_array($data)) {
-            return null;
+        if (is_string($data)) {
+            $data = $this->vttToData($data);
         }
         
+        return $data;
+    }
+
+    public function augment($value): array
+    {
+        if (is_string($value)) {
+            $value = $this->vttToData($value);
+        }
+
+        return [
+            'raw' => $this->cuesToData($value),
+            'cues' => $value,
+            'error' => false,
+        ];
+    }
+
+    protected function cuesToData($data)
+    {
         $vtt = new WebvttFile();
 
         collect($data)
@@ -71,38 +80,21 @@ class VideoText extends Fieldtype
         return $vtt->getFileContent();
     }
 
-    public function augment($value): array
+    protected function vttToData($value)
     {
-        $output = [
-            'raw' => $value,
-            'error' => false
-        ];
+        $vtt = new WebVttFile();
+        $vtt->loadFromString(trim($value));
 
-        try {
-            $vtt = new WebvttFile();
-            $vtt->loadFromString(trim($value));
-
-            $cues = [];
-
-            /** @var WebvttCue $cue */
-            foreach ($vtt->getCues() as $cue) {
-
-                $cues[] = [
-                    'start' => $cue->getStart(),
-                    'stop' => $cue->getStop(),
+        $data = collect($vtt->getCues())
+            ->map(function (WebvttCue $cue) {
+                return [
+                    'start' => (int) ($cue->getStartMS()),
+                    'end' => (int) ($cue->getStopMS()),
                     'text' => $cue->getText(),
-                    //'textLines' => $cue->getTextLines(),
                 ];
-            }
-            $output['cues'] = $cues;
+            })
+            ->all();
 
-
-        } catch (\Exception $exception) {
-            $output['error'] = true;
-            $output['error_msg'] = $exception->getMessage();
-        }
-
-
-        return $output;
+        return $data;
     }
 }
