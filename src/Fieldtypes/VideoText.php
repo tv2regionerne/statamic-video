@@ -4,6 +4,7 @@ namespace Tv2regionerne\StatamicVideo\Fieldtypes;
 
 use Captioning\Format\WebvttCue;
 use Captioning\Format\WebvttFile;
+use Statamic\Assets\AssetContainer;
 use Statamic\Fields\Fieldtype;
 
 class VideoText extends Fieldtype
@@ -21,6 +22,28 @@ class VideoText extends Fieldtype
                     'required',
                 ],
             ],
+            'mode' => [
+                'display' => __('Mode'),
+                'instructions' => __('Chapters mode allows you to add descripions and thumbnails.'),
+                'type' => 'button_group',
+                'default' => 'captions',
+                'options' => [
+                    'captions' => __('Captions'),
+                    'chapters' => __('Chapters'),
+                ],
+            ],
+            'container' => [
+                'display' => __('Container'),
+                'instructions' => __('statamic::fieldtypes.assets.config.container'),
+                'type' => 'asset_container',
+                'max_items' => 1,
+                'mode' => 'select',
+                'validate' => 'required_if:mode,chapters',
+                'default' => AssetContainer::all()->count() == 1 ? AssetContainer::all()->first()->handle() : null,
+                'if' => [
+                    'mode' => 'chapters',
+                ],
+            ],
         ];
     }
 
@@ -31,6 +54,8 @@ class VideoText extends Fieldtype
                 'start' => 0,
                 'end' => 0,
                 'text' => null,
+                'description' => null,
+                'thumbnail' => null,
             ]];
         }
 
