@@ -112,6 +112,7 @@
             position: absolute;
             inset: 0;
         }
+        & div,
         & button {
             position: absolute;
             top: 0;
@@ -119,9 +120,14 @@
             aspect-ratio: 16 / 9;
             width: 100%;
             display: flex;
-            svg {
-                margin: auto;
-            }
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 10px;
+        }
+        & div {
+            font-size: 12px;
+            line-height: 1.3;
         }
     }
     & .video_text-item-input {
@@ -143,7 +149,7 @@
     }
 }
 
-.video_text-captions {
+.video_text-basic {
     & .video_text-item-thumbnail {
         display: none;
     }
@@ -152,7 +158,7 @@
     }
 }
 
-.video_text-chapters {
+.video_text-advanced {
     & .video_text-item-text {
         & .input-group {
             height: auto;

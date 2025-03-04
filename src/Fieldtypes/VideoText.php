@@ -4,8 +4,12 @@ namespace Tv2regionerne\StatamicVideo\Fieldtypes;
 
 use Captioning\Format\WebvttCue;
 use Captioning\Format\WebvttFile;
-use Statamic\Assets\AssetContainer;
+use Illuminate\Http\UploadedFile;
+use Statamic\Contracts\Entries\Entry;
+use Statamic\Facades\AssetContainer;
 use Statamic\Fields\Fieldtype;
+use Statamic\Support\Arr;
+use Statamic\Support\Str;
 
 class VideoText extends Fieldtype
 {
@@ -24,26 +28,42 @@ class VideoText extends Fieldtype
             ],
             'mode' => [
                 'display' => __('Mode'),
-                'instructions' => __('Chapters mode allows you to add descripions and thumbnails.'),
-                'type' => 'button_group',
-                'default' => 'captions',
+                'instructions' => __('Advanced mode allows you to add descripions and thumbnails.'),
+                'type' => 'select',
+                'default' => 'basic',
                 'options' => [
-                    'captions' => __('Captions'),
-                    'chapters' => __('Chapters'),
+                    'basic' => __('Basic'),
+                    'advanced' => __('Advanced'),
                 ],
             ],
             'container' => [
                 'display' => __('Container'),
-                'instructions' => __('statamic::fieldtypes.assets.config.container'),
+                'instructions' => __('Choose which asset container to store the thumbnails in.'),
                 'type' => 'asset_container',
                 'max_items' => 1,
                 'mode' => 'select',
-                'validate' => 'required_if:mode,chapters',
+                'validate' => 'required_if:mode,advanced',
                 'default' => AssetContainer::all()->count() == 1 ? AssetContainer::all()->first()->handle() : null,
                 'if' => [
-                    'mode' => 'chapters',
+                    'mode' => 'advanced',
                 ],
             ],
+            'folder' => [
+                'display' => __('Folder'),
+                'instructions' => __('Choose which folder to store the thumbnails in.'),
+                'type' => 'asset_folder',
+                'max_items' => 1,
+                'if' => [
+                    'mode' => 'advanced',
+                ],
+            ],
+        ];
+    }
+
+    public function preload()
+    {
+        return [
+            'id' => $this->parentId(),
         ];
     }
 
@@ -63,6 +83,12 @@ class VideoText extends Fieldtype
             $data = $this->vttToData($data);
         }
 
+        foreach ($data as $i => $item) {
+            if ($item['thumbnail'] ?? null) {
+                $data[$i]['thumbnail'] = $this->preProcessThumbnail($item['thumbnail']);
+            }
+        }
+
         return $data;
     }
 
@@ -71,8 +97,57 @@ class VideoText extends Fieldtype
         if (is_string($data)) {
             $data = $this->vttToData($data);
         }
-        
+
+        foreach ($data as $i => $item) {
+            if ($item['thumbnail'] ?? null) {
+                $data[$i]['thumbnail'] = $this->processThumbnail($item['thumbnail'], $i + 1);
+            }
+        }
+
         return $data;
+    }
+
+    public function preProcessThumbnail($value)
+    {
+        $container = AssetContainer::find($this->config('container'));
+        if (! $container) {
+            return null;
+        }
+
+        return $container->asset($value)?->url();
+    }
+
+    public function processThumbnail($value, $number)
+    {
+        $container = AssetContainer::find($this->config('container'));
+        if (! $container) {
+            return null;
+        }
+
+        if (! Str::startsWith($value, 'data:')) {
+            return ltrim(Str::after($value, $container->url()), '/');
+        }
+
+        $folder = $this->config('folder');
+        $handle = $this->field->handle();
+        $parentId = $this->parentId();
+
+        $name = $handle.'-'.$number.'.jpg';
+        $path = ltrim($folder.'/'.$parentId.'/'.$name);
+
+        $data = base64_decode(Arr::last(explode(',', $value)));
+
+        $tempFile = tmpfile();
+        $tempPath = stream_get_meta_data($tempFile)['uri'];
+        file_put_contents($tempPath, $data);
+        app()->terminating(function () use ($tempFile) {
+            fclose($tempFile);
+        });
+
+        $upload = new UploadedFile($tempPath, $name, null, 0, true);
+        $asset = $container->makeAsset($path)->upload($upload);
+
+        return $asset->path();
     }
 
     public function augment($value): array
@@ -90,7 +165,7 @@ class VideoText extends Fieldtype
 
     protected function cuesToData($data)
     {
-        $vtt = new WebvttFile();
+        $vtt = new WebvttFile;
 
         collect($data)
             ->each(function ($item, $i) use ($vtt) {
@@ -107,7 +182,7 @@ class VideoText extends Fieldtype
 
     protected function vttToData($value)
     {
-        $vtt = new WebVttFile();
+        $vtt = new WebVttFile;
         $vtt->loadFromString(trim($value));
 
         $data = collect($vtt->getCues())
@@ -121,5 +196,14 @@ class VideoText extends Fieldtype
             ->all();
 
         return $data;
+    }
+
+    protected function parentId()
+    {
+        $parent = $this->field->parent();
+
+        return $parent instanceof Entry
+            ? $parent->id()
+            : null;
     }
 }
