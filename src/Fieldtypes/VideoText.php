@@ -237,9 +237,12 @@ class VideoText extends Fieldtype
             $data = collect($vtt->getCues())
                 ->map(function (WebvttCue $cue) {
                     return [
+                        'id' => RowId::generate(),
                         'start' => (int) ($cue->getStartMS()),
                         'end' => (int) ($cue->getStopMS()),
                         'text' => $cue->getText(),
+                        'description' => null,
+                        'thumbnail' => null,
                     ];
                 })
                 ->all();
