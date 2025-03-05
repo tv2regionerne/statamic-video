@@ -41,7 +41,7 @@
                     {{ timecode(item.start) }}
                 </div>
                 <div class="video_text-item-thumbnail">
-                    <img v-if="item.thumbnail" :src="item.thumbnail" />
+                    <img :src="itemThumbnail(item)" />
                     <template v-if="selectedIndex === index">
                         <div v-if="!meta.id" class="text-gray-700">
                             {{ __('statamic::fieldtypes.assets.dynamic_folder_pending_save') }}
@@ -125,10 +125,7 @@ export default {
 
         loadedVideo() {
             this.loading = false;
-            this.items = this.value.map((item) => ({
-                ...item,
-                id: uniqid(),
-            }));
+            this.items = this.value;
             this.selectItem(this.items[0]);
             this.syncItems();
         },
@@ -231,6 +228,16 @@ export default {
             canvas.remove();
 
             this.updateItem({ thumbnail: dataUrl });
+        },
+
+        itemThumbnail(item) {
+            if (item.thumbnail?.startsWith('data:')) {
+                return item.thumbnail;
+            }
+            if (this.meta.thumbnails[item.id]) {
+                return this.meta.thumbnails[item.id];
+            }
+            return 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'; // transparent gif
         },
 
     },

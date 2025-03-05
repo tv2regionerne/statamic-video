@@ -4,10 +4,13 @@ namespace Tv2regionerne\StatamicVideo\Fieldtypes;
 
 use Captioning\Format\WebvttCue;
 use Captioning\Format\WebvttFile;
+use Facades\Statamic\Fieldtypes\RowId;
 use Illuminate\Http\UploadedFile;
 use Statamic\Contracts\Entries\Entry;
 use Statamic\Facades\AssetContainer;
+use Statamic\Fields\Field;
 use Statamic\Fields\Fieldtype;
+use Statamic\Fieldtypes\Assets\Assets;
 use Statamic\Support\Arr;
 use Statamic\Support\Str;
 
@@ -60,34 +63,59 @@ class VideoText extends Fieldtype
         ];
     }
 
+    public function defaultValue()
+    {
+        return [[
+            'id' => RowId::generate(),
+            'start' => 0,
+            'end' => 0,
+            'text' => null,
+            'description' => null,
+            'thumbnail' => null,
+        ]];
+    }
+
     public function preload()
     {
+        $data = $this->field->value() ?? $this->defaultValue();
+
+        $thumbnails = collect($data)
+            ->mapWithKeys(fn ($item) => [$item['id'] => $this->preloadThumbnail($item)])
+            ->all();
+
         return [
             'id' => $this->parentId(),
+            'thumbnails' => $thumbnails,
         ];
+    }
+
+    protected function preloadThumbnail($item)
+    {
+        $container = AssetContainer::find($this->config('container'));
+        if (! $container) {
+            return null;
+        }
+
+        $thumbnail = $item['thumbnail'] ?? null;
+        if (! $thumbnail) {
+            return null;
+        }
+
+        return $container->asset($thumbnail)?->thumbnailUrl();
     }
 
     public function preProcess($data)
     {
-        if (! isset($data)) {
-            $data = [[
-                'start' => 0,
-                'end' => 0,
-                'text' => null,
-                'description' => null,
-                'thumbnail' => null,
-            ]];
-        }
-
         if (is_string($data)) {
             $data = $this->vttToData($data);
         }
 
-        foreach ($data as $i => $item) {
-            if ($item['thumbnail'] ?? null) {
-                $data[$i]['thumbnail'] = $this->preProcessThumbnail($item['thumbnail']);
-            }
-        }
+        $data = collect($data)
+            ->map(fn ($item) => [
+                ...$item,
+                'id' => $item['id'] ?? RowId::generate(),
+            ])
+            ->all();
 
         return $data;
     }
@@ -98,44 +126,37 @@ class VideoText extends Fieldtype
             $data = $this->vttToData($data);
         }
 
-        foreach ($data as $i => $item) {
-            if ($item['thumbnail'] ?? null) {
-                $data[$i]['thumbnail'] = $this->processThumbnail($item['thumbnail'], $i + 1);
-            }
-        }
+        $data = collect($data)
+            ->map(fn ($item) => [
+                ...$item,
+                'thumbnail' => $this->processThumbnail($item),
+            ])
+            ->all();
 
         return $data;
     }
 
-    public function preProcessThumbnail($value)
+    protected function processThumbnail($item)
     {
         $container = AssetContainer::find($this->config('container'));
         if (! $container) {
             return null;
         }
 
-        return $container->asset($value)?->url();
-    }
-
-    public function processThumbnail($value, $number)
-    {
-        $container = AssetContainer::find($this->config('container'));
-        if (! $container) {
-            return null;
-        }
-
-        if (! Str::startsWith($value, 'data:')) {
-            return ltrim(Str::after($value, $container->url()), '/');
+        $id = $item['id'];
+        $thumbnail = $item['thumbnail'] ?? null;
+        if (! Str::startsWith($thumbnail, 'data:')) {
+            return $thumbnail;
         }
 
         $folder = $this->config('folder');
         $handle = $this->field->handle();
         $parentId = $this->parentId();
 
-        $name = $handle.'-'.$number.'.jpg';
+        $name = $handle.'-'.$id.'.jpg';
         $path = ltrim($folder.'/'.$parentId.'/'.$name);
 
-        $data = base64_decode(Arr::last(explode(',', $value)));
+        $data = base64_decode(Arr::last(explode(',', $thumbnail)));
 
         $tempFile = tmpfile();
         $tempPath = stream_get_meta_data($tempFile)['uri'];
@@ -156,11 +177,38 @@ class VideoText extends Fieldtype
             $value = $this->vttToData($value);
         }
 
+        $value = collect($value)
+            ->map(fn ($item) => [
+                ...$item,
+                'thumbnail' => $this->augmentThumbnail($item),
+            ])
+            ->all();
+
         return [
             'raw' => $this->cuesToData($value),
             'cues' => $value,
-            'error' => false,
         ];
+    }
+
+    protected function augmentThumbnail($item)
+    {
+        $container = AssetContainer::find($this->config('container'));
+        if (! $container) {
+            return null;
+        }
+
+        $thumbnail = $item['thumbnail'] ?? null;
+        if (! $thumbnail) {
+            return null;
+        }
+
+        $field = (new Assets)->setField(new Field('thumbnail', [
+            'type' => 'assets',
+            'max_files' => 1,
+            'container' => $container->handle(),
+        ]));
+
+        return $field->augment($thumbnail);
     }
 
     protected function cuesToData($data)
