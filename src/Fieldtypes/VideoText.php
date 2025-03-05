@@ -230,20 +230,24 @@ class VideoText extends Fieldtype
 
     protected function vttToData($value)
     {
-        $vtt = new WebVttFile;
-        $vtt->loadFromString(trim($value));
+        try {
+            $vtt = new WebVttFile;
+            $vtt->loadFromString(trim($value));
 
-        $data = collect($vtt->getCues())
-            ->map(function (WebvttCue $cue) {
-                return [
-                    'start' => (int) ($cue->getStartMS()),
-                    'end' => (int) ($cue->getStopMS()),
-                    'text' => $cue->getText(),
-                ];
-            })
-            ->all();
+            $data = collect($vtt->getCues())
+                ->map(function (WebvttCue $cue) {
+                    return [
+                        'start' => (int) ($cue->getStartMS()),
+                        'end' => (int) ($cue->getStopMS()),
+                        'text' => $cue->getText(),
+                    ];
+                })
+                ->all();
 
-        return $data;
+            return $data;
+        } catch (\Exception $e) {
+            return null;
+        }
     }
 
     protected function parentId()
