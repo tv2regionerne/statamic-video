@@ -63,21 +63,9 @@ class VideoText extends Fieldtype
         ];
     }
 
-    public function defaultValue()
-    {
-        return [[
-            'id' => RowId::generate(),
-            'start' => 0,
-            'end' => 0,
-            'text' => null,
-            'description' => null,
-            'thumbnail' => null,
-        ]];
-    }
-
     public function preload()
     {
-        $data = $this->field->value() ?? $this->defaultValue();
+        $data = $this->field->value() ?? [];
 
         $thumbnails = collect($data)
             ->mapWithKeys(fn ($item) => [$item['id'] => $this->preloadThumbnail($item)])

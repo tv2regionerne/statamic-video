@@ -12,6 +12,7 @@
         <div v-if="!loading" class="flex bg-gray-900 p-2 gap-2 rounded-b -mt-px text-white items-center">
             <div class="video_addon-track video_text-track">
                 <input
+                    v-if="selectedItem"
                     type="range"
                     class="w-full"
                     :min="0"
@@ -126,11 +127,16 @@ export default {
         loadedVideo() {
             this.loading = false;
             this.items = this.value;
-            this.selectItem(this.items[0]);
-            this.syncItems();
+            if (this.items.length) {
+                this.selectItem(this.items[0]);
+                this.syncItems();
+            }
         },
 
         seekedVideo(ev) {
+            if (!this.selectedItem) {
+                return;
+            }
             if (this.skipNextSeek) {
                 this.skipNextSeek = false;
                 return;
@@ -144,7 +150,9 @@ export default {
 
         addItem() {
             const item = { 
-                start: Math.min(this.selectedItem.start + 1000, this.duration),
+                start: this.selectedItem
+                    ? Math.min(this.selectedItem.start + 1000, this.duration)
+                    : 0,
                 end: null,
                 text: null,
                 id: uniqid(),
@@ -165,6 +173,9 @@ export default {
         },
 
         updateItemStart(value) {
+            if (!this.selectedItem) {
+                return;
+            }
             this.updateItem({ start: value });
             this.seekVideo(value);
         },
