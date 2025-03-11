@@ -1,3 +1,7 @@
+.video_addon-wrapper {
+    --video-aspect-ratio: 16 / 9;
+}
+
 .video_addon-track {
     --video-track-height: 1.5rem;
     height: var(--video-track-height);
@@ -103,8 +107,8 @@
     }
     .video_text-item-thumbnail {
         position: relative;
-        width: calc(79px * 16 / 9);
-        aspect-ratio: 16 / 9;
+        width: calc(79px * var(--video-aspect-ratio));
+        aspect-ratio: var(--video-aspect-ratio);
         background-color: #eef2f6;
         border-right: 1px solid #c4cdd6;
         & img {
@@ -117,7 +121,7 @@
             position: absolute;
             top: 0;
             left: 0;
-            aspect-ratio: 16 / 9;
+            aspect-ratio: var(--video-aspect-ratio);
             width: 100%;
             display: flex;
             justify-content: center;
@@ -192,6 +196,6 @@
 }
 
 .video_addon-preview {
-    aspect-ratio: 16 / 9;
+    aspect-ratio: var(--video-aspect-ratio);
     object-fit: contain;
 }
