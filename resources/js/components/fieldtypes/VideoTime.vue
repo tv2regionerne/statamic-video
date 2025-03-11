@@ -1,6 +1,6 @@
 <template>
 
-    <div class="">
+    <div class="video_addon-wrapper" :style="wrapperStyle">
         <video
             :src="sourceUrl"
             class="video_addon-preview w-full rounded-t bg-black"
@@ -76,6 +76,15 @@ export default {
 
         isRange() {
             return this.config.mode === 'range';
+        },
+
+        wrapperStyle() {
+            if (this.loading) {
+                return {};
+            }
+            return {
+                '--video-aspect-ratio': this.$refs.video.videoWidth / this.$refs.video.videoHeight,
+            };
         },
 
     },
