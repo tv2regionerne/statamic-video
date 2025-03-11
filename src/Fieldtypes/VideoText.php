@@ -79,6 +79,9 @@ class VideoText extends Fieldtype
 
     protected function preloadThumbnail($item)
     {
+        if (! $this->config('container')) {
+            return null;
+        }
         $container = AssetContainer::find($this->config('container'));
         if (! $container) {
             return null;
@@ -127,6 +130,9 @@ class VideoText extends Fieldtype
 
     protected function processThumbnail($item)
     {
+        if (! $this->config('container')) {
+            return null;
+        }
         $container = AssetContainer::find($this->config('container'));
         if (! $container) {
             return null;
@@ -181,6 +187,9 @@ class VideoText extends Fieldtype
 
     protected function augmentThumbnail($item)
     {
+        if (! $this->config('container')) {
+            return null;
+        }
         $container = AssetContainer::find($this->config('container'));
         if (! $container) {
             return null;
