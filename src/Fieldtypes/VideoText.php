@@ -172,7 +172,7 @@ class VideoText extends Fieldtype
         return $asset->path();
     }
 
-    public function augment($value): array
+    public function augment($value)
     {
         if (is_string($value)) {
             $value = $this->vttToData($value);
@@ -186,7 +186,7 @@ class VideoText extends Fieldtype
             ->all();
 
         return [
-            'raw' => $this->cuesToData($value),
+            'raw' => $this->dataToVtt($value),
             'cues' => $value,
         ];
     }
@@ -212,8 +212,12 @@ class VideoText extends Fieldtype
         return $field->augment($thumbnail);
     }
 
-    protected function cuesToData($data)
+    protected function dataToVtt($data)
     {
+        if (! count($data)) {
+            return null;
+        }
+
         $vtt = new WebvttFile;
 
         collect($data)
@@ -250,7 +254,7 @@ class VideoText extends Fieldtype
 
             return $data;
         } catch (\Exception $e) {
-            return null;
+            return [];
         }
     }
 
