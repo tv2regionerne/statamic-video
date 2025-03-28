@@ -120,7 +120,11 @@ class VideoText extends Fieldtype
         $data = collect($data)
             ->map(fn ($item) => [
                 ...$item,
+                'id' => $item['id'] ?? RowId::generate(),
                 'description' => $item['description'] ?? null,
+            ])
+            ->map(fn ($item) => [
+                ...$item,
                 'thumbnail' => $this->processThumbnail($item),
             ])
             ->all();
