@@ -68,11 +68,11 @@
                         :value="item.description"
                         @focus="selectItem(item)"
                         @input="updateItem({ description: $event })" />
-                    <button v-if="index !== 0 && selectedIndex === index" @click.stop="deleteItem()" type="button" class="text-gray-600 cursor-pointer px-2 hover:text-blue-500">
+                    <button v-if="selectedIndex === index" @click.stop="deleteItem()" type="button" class="text-gray-600 cursor-pointer px-2 hover:text-blue-500">
                         <span>×</span>
                     </button>
                 </div>
-                <div class="video_text-item-timecode">
+                <div class="video_text-item-timecode" hidden>
                     {{ timecode(item.end) }}
                 </div>
             </div>
@@ -204,7 +204,11 @@ export default {
                 ...this.items.slice(this.selectedIndex + 1),
             ]
             this.syncItems();
-            this.selectItem(this.items[0]);
+            if (this.items.length) {
+                this.selectItem(this.items[0]);
+            } else {
+                this.deselectItem();
+            }
         },
 
         selectItem(item, seek = true) {
@@ -212,6 +216,10 @@ export default {
             if (seek) {
                 this.seekVideo(this.selectedItem.start);
             }
+        },
+
+        deselectItem() {
+            this.selected = null;
         },
 
         syncItems() {
