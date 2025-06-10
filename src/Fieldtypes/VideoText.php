@@ -189,6 +189,19 @@ class VideoText extends Fieldtype
         ];
     }
 
+    public function shallowAugment($values)
+    {
+        $value = $this->augment($values);
+
+        $value['cues'] = collect($value['cues'])
+            ->map(fn ($item) => [
+                ...$item,
+                'thumbnail' => $item['thumbnail']?->toShallowAugmentedCollection(),
+            ])->all();
+
+        return $value;
+    }
+
     protected function augmentThumbnail($item)
     {
         if (! $this->config('container')) {
