@@ -12,7 +12,7 @@
         <div v-if="!loading" class="flex bg-gray-900 p-2 gap-2 rounded-b -mt-px text-white items-center">
             <div class="video_addon-track video_text-track">
                 <input
-                    v-if="selectedItem"
+                    v-if="selectedItem"D
                     type="range"
                     class="w-full"
                     :min="0"
@@ -44,14 +44,11 @@
                 <div class="video_text-item-thumbnail">
                     <img :src="itemThumbnail(item)" />
                     <template v-if="selectedIndex === index">
-                        <div v-if="!meta.id" class="text-gray-700">
+                        <div v-if="!meta.id" class="text-gray-600">
                             {{ __('statamic::fieldtypes.assets.dynamic_folder_pending_save') }}
                         </div>
-                        <button type="button" @click.stop="snapThumbnail()" v-if="meta.id">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-gray-600 cursor-pointer hover:text-blue-500">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M6.827 6.175A2.31 2.31 0 0 1 5.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 0 0-1.134-.175 2.31 2.31 0 0 1-1.64-1.055l-.822-1.316a2.192 2.192 0 0 0-1.736-1.039 48.774 48.774 0 0 0-5.232 0 2.192 2.192 0 0 0-1.736 1.039l-.821 1.316Z" />
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 12.75a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0ZM18.75 10.5h.008v.008h-.008V10.5Z" />
-                            </svg>
+                        <button v-if="meta.id && item.thumbnail" @click.stop="deleteThumbnail()" v-tooltip="__('Remove Thumbnail')" type="button" class="text-gray-600 cursor-pointer px-2 hover:text-blue-500">
+                            <span>×</span>
                         </button>
                     </template>
                 </div>
@@ -68,7 +65,7 @@
                         :value="item.description"
                         @focus="selectItem(item)"
                         @input="updateItem({ description: $event })" />
-                    <button v-if="selectedIndex === index" @click.stop="deleteItem()" type="button" class="text-gray-600 cursor-pointer px-2 hover:text-blue-500">
+                    <button v-if="selectedIndex === index" @click.stop="deleteItem()" v-tooltip="__('Remove Chapter')" type="button" class="text-gray-600 cursor-pointer px-2 hover:text-blue-500">
                         <span>×</span>
                     </button>
                 </div>
@@ -76,7 +73,13 @@
                     {{ timecode(item.end) }}
                 </div>
             </div>
-            <button class="btn mt-2" @click="addItem">Add Chapter</button>
+            <button class="btn mt-2" type="button" @click="addItem">Add Chapter</button>
+            <button class="btn video_text-capture" type="button" @click="captureThumbnail()" v-if="meta.id" v-tooltip="__('Capture Thumbnail')">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-gray-600 cursor-pointer hover:text-blue-500">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6.827 6.175A2.31 2.31 0 0 1 5.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 0 0-1.134-.175 2.31 2.31 0 0 1-1.64-1.055l-.822-1.316a2.192 2.192 0 0 0-1.736-1.039 48.774 48.774 0 0 0-5.232 0 2.192 2.192 0 0 0-1.736 1.039l-.821 1.316Z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 12.75a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0ZM18.75 10.5h.008v.008h-.008V10.5Z" />
+                </svg>
+            </button>
         </div>
     </div>
 
@@ -158,18 +161,19 @@ export default {
         },
 
         addItem() {
+            const position = this.$refs.video.currentTime * 1000;
+            const start = this.selectedItem?.start === position
+                ? this.selectedItem.start + ((this.selectedItem.end - this.selectedItem.start) / 2)
+                : position;
             const item = { 
-                start: this.selectedItem
-                    ? Math.min(this.selectedItem.start + 1000, this.duration)
-                    : 0,
+                start: start,
                 end: null,
                 text: null,
                 id: uniqid(),
             };
             this.items = [
-                ...this.items.slice(0, this.selectedIndex),
+                ...this.items,
                 item,
-                ...this.items.slice(this.selectedIndex),
             ];
             this.syncItems();
             this.selectItem(item);
@@ -196,6 +200,10 @@ export default {
                 ...this.items.slice(this.selectedIndex + 1),
             ];
             this.syncItems();
+        },
+
+        deleteThumbnail() {
+            this.updateItem({ thumbnail: null });
         },
 
         deleteItem() {
@@ -245,7 +253,7 @@ export default {
             return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
         },
 
-        snapThumbnail() {
+        captureThumbnail() {
             const canvas = document.createElement('canvas');
             const ctx = canvas.getContext('2d');
 
@@ -262,7 +270,7 @@ export default {
             if (item.thumbnail?.startsWith('data:')) {
                 return item.thumbnail;
             }
-            if (this.meta.thumbnails[item.id]) {
+            if (item.thumbnail && this.meta.thumbnails[item.id]) {
                 return this.meta.thumbnails[item.id];
             }
             return 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'; // transparent gif
