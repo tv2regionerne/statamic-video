@@ -1,5 +1,6 @@
 .video_addon-wrapper {
     --video-aspect-ratio: 16 / 9;
+    position: relative;
 }
 
 .video_addon-track {
@@ -116,8 +117,14 @@
             position: absolute;
             inset: 0;
         }
-        & div,
         & button {
+            position: absolute;
+            top: 0;
+            right: 0;
+        }
+        & div {
+            font-size: 12px;
+            line-height: 1.3;
             position: absolute;
             top: 0;
             left: 0;
@@ -128,10 +135,6 @@
             align-items: center;
             text-align: center;
             padding: 10px;
-        }
-        & div {
-            font-size: 12px;
-            line-height: 1.3;
         }
     }
     & .video_text-item-input {
@@ -151,6 +154,13 @@
             box-shadow: none;
         }
     }
+}
+
+.video_text-snap {
+    position: absolute;
+    top: 0.75rem;
+    left: 0.75rem;
+    padding-inline: 0.5rem;
 }
 
 .video_text-basic {
